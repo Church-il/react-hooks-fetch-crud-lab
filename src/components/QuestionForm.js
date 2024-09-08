@@ -1,26 +1,34 @@
 import React, { useState } from "react";
 
-function QuestionForm(props) {
-  const [formData, setFormData] = useState({
+function QuestionForm({ onAddQuestion }) {
+  const [form, setForm] = useState({
     prompt: "",
-    answer1: "",
-    answer2: "",
-    answer3: "",
-    answer4: "",
-    correctIndex: 0,
+    answers: ["", "", "", ""],
+    correctIndex: "0",
   });
 
-  function handleChange(event) {
-    setFormData({
-      ...formData,
-      [event.target.name]: event.target.value,
-    });
-  }
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (name.startsWith("answer")) {
+      const index = parseInt(name.match(/\d/)[0], 10);
+      setForm((prevForm) => ({
+        ...prevForm,
+        answers: prevForm.answers.map((answer, i) => (i === index ? value : answer)),
+      }));
+    } else {
+      setForm((prevForm) => ({ ...prevForm, [name]: value }));
+    }
+  };
 
-  function handleSubmit(event) {
-    event.preventDefault();
-    console.log(formData);
-  }
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onAddQuestion(form);
+    setForm({
+      prompt: "",
+      answers: ["", "", "", ""],
+      correctIndex: "0",
+    });
+  };
 
   return (
     <section>
@@ -29,59 +37,34 @@ function QuestionForm(props) {
         <label>
           Prompt:
           <input
-            type="text"
             name="prompt"
-            value={formData.prompt}
-            onChange={handleChange}
-          />
-        </label>
-        <label>
-          Answer 1:
-          <input
             type="text"
-            name="answer1"
-            value={formData.answer1}
+            value={form.prompt}
             onChange={handleChange}
           />
         </label>
-        <label>
-          Answer 2:
-          <input
-            type="text"
-            name="answer2"
-            value={formData.answer2}
-            onChange={handleChange}
-          />
-        </label>
-        <label>
-          Answer 3:
-          <input
-            type="text"
-            name="answer3"
-            value={formData.answer3}
-            onChange={handleChange}
-          />
-        </label>
-        <label>
-          Answer 4:
-          <input
-            type="text"
-            name="answer4"
-            value={formData.answer4}
-            onChange={handleChange}
-          />
-        </label>
+        {form.answers.map((answer, index) => (
+          <label key={index}>
+            Answer {index + 1}:
+            <input
+              name={`answer${index}`}
+              type="text"
+              value={answer}
+              onChange={handleChange}
+            />
+          </label>
+        ))}
         <label>
           Correct Answer:
           <select
             name="correctIndex"
-            value={formData.correctIndex}
+            value={form.correctIndex}
             onChange={handleChange}
+            aria-label="Correct Answer"
           >
-            <option value="0">{formData.answer1}</option>
-            <option value="1">{formData.answer2}</option>
-            <option value="2">{formData.answer3}</option>
-            <option value="3">{formData.answer4}</option>
+            {[0, 1, 2, 3].map((i) => (
+              <option key={i} value={i.toString()}>{`Answer ${i + 1}`}</option>
+            ))}
           </select>
         </label>
         <button type="submit">Add Question</button>
